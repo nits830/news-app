@@ -53,7 +53,7 @@ router.post('/', async (req, res) => {
       tags,
       category,
       coverImage,
-      author: req.user.userId
+      author: req.user?.userId // Optional author
     });
 
     await article.save();
@@ -100,8 +100,8 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Article not found' });
     }
 
-    // Check if user is the author or admin
-    if (article.author.toString() !== req.user.userId && req.user.role !== 'admin') {
+    // Check if user is the author or admin (only if article has an author)
+    if (article.author && article.author.toString() !== req.user?.userId && req.user?.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to update this article' });
     }
 
@@ -131,8 +131,8 @@ router.patch('/:id/publish', async (req, res) => {
       return res.status(404).json({ message: 'Article not found' });
     }
 
-    // Check if user is the author or admin
-    if (article.author.toString() !== req.user.userId && req.user.role !== 'admin') {
+    // Check if user is the author or admin (only if article has an author)
+    if (article.author && article.author.toString() !== req.user?.userId && req.user?.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to publish this article' });
     }
 
@@ -155,8 +155,8 @@ router.patch('/:id/unpublish', async (req, res) => {
       return res.status(404).json({ message: 'Article not found' });
     }
 
-    // Check if user is the author or admin
-    if (article.author.toString() !== req.user.userId && req.user.role !== 'admin') {
+    // Check if user is the author or admin (only if article has an author)
+    if (article.author && article.author.toString() !== req.user?.userId && req.user?.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to unpublish this article' });
     }
 
@@ -170,7 +170,7 @@ router.patch('/:id/unpublish', async (req, res) => {
   }
 });
 
-// Delete article (private route - only author or admin can access)
+// Delete article
 router.delete('/:id/delete', async (req, res) => {
   try {
     const article = await Article.findById(req.params.id);
@@ -179,8 +179,8 @@ router.delete('/:id/delete', async (req, res) => {
       return res.status(404).json({ message: 'Article not found' });
     }
 
-    // Check if user is the author or admin
-    if (article.author.toString() !== req.user.userId && req.user.role !== 'admin') {
+    // Check if user is the author or admin (only if article has an author)
+    if (article.author && article.author.toString() !== req.user?.userId && req.user?.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to delete this article' });
     }
 

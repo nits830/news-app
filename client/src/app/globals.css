@@ -1,2 +1,115 @@
 @import "tailwindcss";
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Classic News Theme */
+  --primary: #1a365d;      /* Deep Navy */
+  --primary-dark: #0f2942; /* Darker Navy */
+  --primary-light: #2c5282; /* Light Navy */
+  --secondary: #4a5568;    /* Professional Gray */
+  --accent: #c53030;       /* Classic Red */
+  --background: #ffffff;   /* Clean White */
+  --background-alt: #f7fafc; /* Light Gray */
+  --text-primary: #2d3748; /* Dark Gray */
+  --text-secondary: #4a5568; /* Medium Gray */
+  --success: #38a169;      /* Green */
+  --warning: #d69e2e;      /* Yellow */
+  --error: #e53e3e;        /* Red */
+  --border: #e2e8f0;       /* Light Border */
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--background)] text-[var(--text-primary)];
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-[var(--primary)];
+  }
+
+  a {
+    @apply text-[var(--primary)] hover:text-[var(--accent)] transition-colors;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[var(--primary)] text-white px-4 py-2 rounded hover:bg-[var(--primary-dark)] transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-[var(--secondary)] text-white px-4 py-2 rounded hover:bg-[var(--primary)] transition-colors;
+  }
+
+  .btn-accent {
+    @apply bg-[var(--accent)] text-white px-4 py-2 rounded hover:bg-[var(--primary)] transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden border border-[var(--border)];
+  }
+
+  .category-tag {
+    @apply inline-block px-3 py-1 text-sm font-medium bg-[var(--primary-light)] text-white rounded-full;
+  }
+
+  .breaking-news {
+    @apply bg-[var(--accent)] text-white px-4 py-2 font-bold;
+  }
+
+  .nav-link {
+    @apply text-[var(--text-primary)] hover:text-[var(--accent)] font-medium transition-colors;
+  }
+
+  .search-input {
+    @apply w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent;
+  }
+
+  .article-content {
+    @apply max-w-none;
+  }
+
+  .article-content h1 {
+    @apply text-3xl font-bold mb-4;
+  }
+
+  .article-content h2 {
+    @apply text-2xl font-bold mb-3;
+  }
+
+  .article-content p {
+    @apply mb-4 text-[var(--text-primary)];
+  }
+
+  .article-content a {
+    @apply text-[var(--primary)] hover:text-[var(--accent)] underline;
+  }
+
+  .article-content blockquote {
+    @apply border-l-4 border-[var(--primary)] pl-4 italic my-4;
+  }
+
+  .article-content img {
+    @apply rounded-lg my-4;
+  }
+
+  .article-meta {
+    @apply text-sm text-[var(--text-secondary)] mt-2;
+  }
+
+  .article-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  .featured-section {
+    @apply bg-[var(--background-alt)] p-6 rounded-lg mb-8;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-[var(--primary)] mb-4;
+  }
+}
+

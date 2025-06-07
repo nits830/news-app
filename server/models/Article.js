@@ -41,7 +41,11 @@ const articleSchema = new mongoose.Schema({
     enum: CATEGORIES,
     required: true 
   },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  author: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
+    required: false // Making author optional
+  },
   coverImage: String,
   published: { type: Boolean, default: false },
   publishedAt: Date

@@ -2,35 +2,31 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Article = require('../models/Article');
+const { isAdmin } = require('../middleware/adminMiddleware');
+const auth = require('../middleware/auth');
 
-// Middleware to check if user is admin
-const isAdmin = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user.userId);
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
-    }
-    next();
-  } catch (error) {
-    res.status(500).json({ message: 'Error checking admin status', error: error.message });
-  }
-};
-
-// Apply admin middleware to all routes
-router.use(isAdmin);
+// Apply auth middleware to all admin routes
+router.use(auth);
 
 // Get all users
-router.get('/users', async (req, res) => {
+router.get('/users', isAdmin, async (req, res) => {
   try {
     const users = await User.find().select('-password');
-    res.json(users);
+    res.json({
+      success: true,
+      data: users
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching users', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching users',
+      error: error.message
+    });
   }
 });
 
 // Get user by ID
-router.get('/users/:id', async (req, res) => {
+router.get('/users/:id', isAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
@@ -43,7 +39,7 @@ router.get('/users/:id', async (req, res) => {
 });
 
 // Update user role
-router.patch('/users/:id/role', async (req, res) => {
+router.patch('/users/:id/role', isAdmin, async (req, res) => {
   try {
     const { role } = req.body;
     if (!['admin', 'author'].includes(role)) {
@@ -67,7 +63,7 @@ router.patch('/users/:id/role', async (req, res) => {
 });
 
 // Delete user
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', isAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -75,7 +71,7 @@ router.delete('/users/:id', async (req, res) => {
     }
 
     // Prevent self-deletion
-    if (user._id.toString() === req.user.userId) {
+    if (user._id.toString() === req.adminUser._id) {
       return res.status(400).json({ message: 'Cannot delete your own account' });
     }
 
@@ -87,7 +83,7 @@ router.delete('/users/:id', async (req, res) => {
 });
 
 // Get all articles (including unpublished)
-router.get('/articles', async (req, res) => {
+router.get('/articles', isAdmin, async (req, res) => {
   try {
     const articles = await Article.find()
       .populate('author', 'name email')
@@ -99,7 +95,7 @@ router.get('/articles', async (req, res) => {
 });
 
 // Get article by ID
-router.get('/articles/:id', async (req, res) => {
+router.get('/articles/:id', isAdmin, async (req, res) => {
   try {
     const article = await Article.findById(req.params.id)
       .populate('author', 'name email');
@@ -115,7 +111,7 @@ router.get('/articles/:id', async (req, res) => {
 });
 
 // Update any article
-router.put('/articles/:id', async (req, res) => {
+router.put('/articles/:id', isAdmin, async (req, res) => {
   try {
     const updates = req.body;
     const article = await Article.findByIdAndUpdate(
@@ -135,7 +131,7 @@ router.put('/articles/:id', async (req, res) => {
 });
 
 // Delete any article
-router.delete('/articles/:id', async (req, res) => {
+router.delete('/articles/:id', isAdmin, async (req, res) => {
   try {
     const article = await Article.findById(req.params.id);
     
@@ -151,7 +147,7 @@ router.delete('/articles/:id', async (req, res) => {
 });
 
 // Get dashboard statistics
-router.get('/dashboard', async (req, res) => {
+router.get('/dashboard', isAdmin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
     const totalArticles = await Article.countDocuments();
@@ -180,6 +176,54 @@ router.get('/dashboard', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching dashboard data', error: error.message });
+  }
+});
+
+// Example admin-only route for managing articles
+router.post('/articles', isAdmin, async (req, res) => {
+  try {
+    const article = new Article({
+      ...req.body,
+      author: req.adminUser._id // Using the admin user from middleware
+    });
+    await article.save();
+    res.status(201).json({
+      success: true,
+      data: article
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error creating article',
+      error: error.message
+    });
+  }
+});
+
+// Example admin-only route for managing categories
+router.put('/categories/:id', isAdmin, async (req, res) => {
+  try {
+    const category = await Category.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: 'Category not found'
+      });
+    }
+    res.json({
+      success: true,
+      data: category
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error updating category',
+      error: error.message
+    });
   }
 });
 
