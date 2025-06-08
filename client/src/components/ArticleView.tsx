@@ -6,6 +6,7 @@ import { CalendarIcon, UserIcon, TagIcon, ClockIcon, ShareIcon, BookmarkIcon, Ch
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Image from 'next/image';
+import { usePathname, useParams } from 'next/navigation';
 
 interface Article {
   _id: string;
@@ -41,21 +42,45 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const pathname = usePathname();
+  const params = useParams();
 
   useEffect(() => {
     const fetchArticle = async () => {
-      if (!articleId) {
-        setArticle(null);
-        return;
-      }
-
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await axios.get(`http://localhost:5000/api/articles/${articleId}`);
+        let response;
+        if (articleId) {
+          // Fetch specific article
+          response = await axios.get(`http://localhost:5000/api/articles/${articleId}`);
+        } else if (pathname === '/') {
+          // Fetch random article for homepage
+          const allArticles = await axios.get('http://localhost:5000/api/articles');
+          const randomIndex = Math.floor(Math.random() * allArticles.data.length);
+          response = { data: allArticles.data[randomIndex] };
+        } else if (pathname.startsWith('/category/')) {
+          // Fetch random article from the selected category
+          const categoryId = params.categoryId as string;
+          const categoryArticles = await axios.get(`http://localhost:5000/api/category/${categoryId}`);
+          if (categoryArticles.data.length > 0) {
+            const randomIndex = Math.floor(Math.random() * categoryArticles.data.length);
+            response = { data: categoryArticles.data[randomIndex] };
+          } else {
+            setError('No articles found in this category');
+            setIsLoading(false);
+            return;
+          }
+        } else {
+          setArticle(null);
+          setIsLoading(false);
+          return;
+        }
+        
         setArticle(response.data);
       } catch (err) {
+        console.error('Error fetching article:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsLoading(false);
@@ -63,7 +88,7 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
     };
 
     fetchArticle();
-  }, [articleId]);
+  }, [articleId, pathname, params.categoryId]);
 
   const handleShare = () => {
     if (navigator.share) {
@@ -200,10 +225,10 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
                   <img
                     src={image.url}
                     alt={image.alt}
-                    className="w-full h-64 object-cover rounded-lg"
+                    className="w-full h-48 object-cover rounded-lg"
                   />
                   {image.caption && (
-                    <figcaption className="text-sm text-gray-600 mt-2">
+                    <figcaption className="mt-2 text-sm text-gray-600 text-center">
                       {image.caption}
                     </figcaption>
                   )}
@@ -214,11 +239,11 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-8 mb-6">
-              {article.tags.map((tag) => (
+            <div className="flex flex-wrap gap-2 mt-8">
+              {article.tags.map((tag, index) => (
                 <span
-                  key={tag}
-                  className="px-3 py-1 bg-blue-100/70 text-[#1e40af] rounded-full text-sm"
+                  key={index}
+                  className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
                 >
                   {tag}
                 </span>
@@ -226,50 +251,51 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
             </div>
           )}
 
-          {/* Article Footer */}
-          <div className="border-t border-blue-200 pt-6 mt-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {article.originalSource && (
-                  <a
-                    href={article.originalSource}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#1e40af] hover:text-[#1e3a8a] font-medium"
-                  >
-                    Read original article
-                  </a>
-                )}
-              </div>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={handleShare}
-                  className="text-gray-600 hover:text-gray-900"
-                  title="Share article"
+          {/* Source Link */}
+          {article.originalSource && (
+            <div className="mt-8 p-4 bg-gray-100 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Original source:{' '}
+                <a
+                  href={article.originalSource}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
                 >
-                  <ShareIcon className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={toggleBookmark}
-                  className={`${
-                    isBookmarked 
-                      ? 'text-[#1e40af] hover:text-[#1e3a8a]' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                  title={isBookmarked ? 'Remove bookmark' : 'Bookmark article'}
-                >
-                  <BookmarkIcon className="h-5 w-5" />
-                </button>
-                <button
-                  className="text-gray-600 hover:text-gray-900"
-                  onClick={() => {/* Implement comment functionality */}}
-                >
-                  <ChatBubbleLeftIcon className="h-5 w-5" />
-                </button>
-              </div>
+                  {article.originalSource}
+                </a>
+              </p>
             </div>
-          </div>
+          )}
         </div>
+
+        {/* Article Footer */}
+        <footer className="p-6 border-t border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <ShareIcon className="h-5 w-5" />
+                <span>Share</span>
+              </button>
+              <button
+                onClick={toggleBookmark}
+                className={`flex items-center gap-2 transition-colors ${
+                  isBookmarked ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
+                }`}
+              >
+                <BookmarkIcon className="h-5 w-5" />
+                <span>{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
+              </button>
+            </div>
+            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
+              <ChatBubbleLeftIcon className="h-5 w-5" />
+              <span>Comment</span>
+            </button>
+          </div>
+        </footer>
       </article>
     </div>
   );

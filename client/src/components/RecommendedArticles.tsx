@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import ArticleCard from './ArticleCard';
+import { usePathname } from 'next/navigation';
 
 interface Article {
   _id: string;
@@ -21,6 +22,7 @@ export default function RecommendedArticles({ currentArticleId, onArticleSelect 
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -40,7 +42,7 @@ export default function RecommendedArticles({ currentArticleId, onArticleSelect 
     };
 
     fetchArticles();
-  }, [currentArticleId]);
+  }, [currentArticleId, pathname]);
 
   if (isLoading) {
     return (

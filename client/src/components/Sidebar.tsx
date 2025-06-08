@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { NewspaperIcon } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
 
 interface Article {
   _id: string;
@@ -18,27 +19,52 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onArticleSelect, selectedArticleId }: SidebarProps) {
+  const { categoryId } = useParams();
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLatestArticles = async () => {
+    const fetchArticles = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/articles');
-        const sortedArticles = response.data.sort((a: Article, b: Article) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setArticles(sortedArticles);
+        setIsLoading(true);
+        setError(null);
+        
+        // Always fetch articles for the current category
+        if (categoryId) {
+          console.log('Fetching articles for category in sidebar:', categoryId);
+          const response = await axios.get(`http://localhost:5000/api/category/${categoryId}`);
+          const sortedArticles = response.data.sort((a: Article, b: Article) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setArticles(sortedArticles);
+        } else {
+          // If no category is selected, fetch latest articles
+          const response = await axios.get('http://localhost:5000/api/articles');
+          const sortedArticles = response.data.sort((a: Article, b: Article) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setArticles(sortedArticles);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Error fetching articles:', err);
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 404) {
+            setError('No articles found in this category');
+          } else {
+            setError(err.response?.data?.message || 'Failed to fetch articles');
+          }
+        } else {
+          setError(err instanceof Error ? err.message : 'An error occurred');
+        }
+        setArticles([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchLatestArticles();
-  }, []);
+    fetchArticles();
+  }, [categoryId]); // Re-fetch when category changes
 
   if (isLoading) {
     return (
@@ -58,7 +84,21 @@ export default function Sidebar({ onArticleSelect, selectedArticleId }: SidebarP
   if (error) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 p-4">
-        <p className="text-red-600">{error}</p>
+        <div className="text-center">
+          <NewspaperIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (articles.length === 0) {
+    return (
+      <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 p-4">
+        <div className="text-center">
+          <NewspaperIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-gray-600">No articles available</p>
+        </div>
       </div>
     );
   }
@@ -66,7 +106,9 @@ export default function Sidebar({ onArticleSelect, selectedArticleId }: SidebarP
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200">
       <div className="p-4 border-b border-blue-200">
-        <h2 className="text-xl font-semibold text-gray-900">Latest Articles</h2>
+        <h2 className="text-xl font-semibold text-gray-900">
+          {categoryId ? 'Related Articles' : 'Latest Articles'}
+        </h2>
       </div>
       <div className="divide-y divide-blue-200">
         {articles.map((article) => (
