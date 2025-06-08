@@ -20,7 +20,7 @@ interface Article {
     name: string;
     email: string;
   };
-  publishedAt: string;
+  createdAt: string;
   content?: {
     type: 'markdown' | 'html';
     data: string;
@@ -131,7 +131,7 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
             <span className="text-sm font-medium text-[#1e40af]">{article.category}</span>
             <span className="text-gray-400">•</span>
             <span className="text-sm text-gray-600">
-              {new Date(article.publishedAt).toLocaleDateString('en-US', {
+              {new Date(article.createdAt).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -174,7 +174,6 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
 
           {/* Main Content */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900">Explanation</h2>
             {article.content ? (
               <div className="rich-content">
                 {article.content.type === 'markdown' ? (

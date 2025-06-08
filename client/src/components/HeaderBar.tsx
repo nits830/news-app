@@ -14,13 +14,13 @@ export default function HeaderBar() {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 border-b border-blue-500 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Website Name */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-[var(--primary)]">NewsApp</span>
+              <span className="text-2xl font-bold text-white">NewsApp</span>
             </Link>
           </div>
 
@@ -33,20 +33,17 @@ export default function HeaderBar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search news..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-blue-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-blue-100"
                 />
-                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-blue-100" />
               </div>
             </form>
           </div>
 
           {/* Auth Buttons */}
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/signin"
-              className="text-[var(--text-secondary)] hover:text-[var(--primary)] px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              Sign In
+          <div className="flex items-center gap-4">
+            <Link href="/signin" className="text-white hover:text-blue-100 font-medium">
+              Sign in
             </Link>
             <Link
               href="/signup"

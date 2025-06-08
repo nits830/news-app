@@ -8,7 +8,7 @@ interface Article {
   _id: string;
   title: string;
   summary: string;
-  publishedAt: string;
+  createdAt: string;
   category: string;
 }
 
@@ -26,7 +26,10 @@ export default function Sidebar({ onArticleSelect, selectedArticleId }: SidebarP
     const fetchLatestArticles = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/articles');
-        setArticles(response.data);
+        const sortedArticles = response.data.sort((a: Article, b: Article) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setArticles(sortedArticles);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -81,7 +84,11 @@ export default function Sidebar({ onArticleSelect, selectedArticleId }: SidebarP
               {article.summary}
             </p>
             <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-              <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
+              <span>{new Date(article.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}</span>
               <span>•</span>
               <span>{article.category}</span>
             </div>
