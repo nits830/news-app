@@ -149,33 +149,65 @@ router.delete('/articles/:id', isAdmin, async (req, res) => {
 // Get dashboard statistics
 router.get('/dashboard', isAdmin, async (req, res) => {
   try {
+    // Get total counts
     const totalUsers = await User.countDocuments();
     const totalArticles = await Article.countDocuments();
     const publishedArticles = await Article.countDocuments({ published: true });
     const unpublishedArticles = await Article.countDocuments({ published: false });
     
+    // Get user role distribution
+    const adminUsers = await User.countDocuments({ role: 'admin' });
+    const authorUsers = await User.countDocuments({ role: 'author' });
+    const regularUsers = await User.countDocuments({ role: 'user' });
+
+    // Get recent articles with more details
     const recentArticles = await Article.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate('author', 'name email');
+      .populate('author', 'name email')
+      .select('title slug published createdAt author');
 
+    // Get recent users with more details
     const recentUsers = await User.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .select('-password');
+      .select('name email role createdAt');
+
+    // Get articles by status
+    const articlesByStatus = {
+      published: publishedArticles,
+      unpublished: unpublishedArticles,
+      total: totalArticles
+    };
+
+    // Get users by role
+    const usersByRole = {
+      admin: adminUsers,
+      author: authorUsers,
+      regular: regularUsers,
+      total: totalUsers
+    };
 
     res.json({
-      statistics: {
-        totalUsers,
-        totalArticles,
-        publishedArticles,
-        unpublishedArticles
-      },
-      recentArticles,
-      recentUsers
+      success: true,
+      data: {
+        statistics: {
+          articles: articlesByStatus,
+          users: usersByRole
+        },
+        recentActivity: {
+          articles: recentArticles,
+          users: recentUsers
+        }
+      }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching dashboard data', error: error.message });
+    console.error('Dashboard Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard data',
+      error: error.message
+    });
   }
 });
 
