@@ -105,7 +105,7 @@ export default function AdminDashboard() {
 
   const toggleArticleStatus = async (articleId: string, currentStatus: boolean) => {
     try {
-      const response = await api.patch(`/articles/${articleId}/${currentStatus ? 'unpublish' : 'publish'}`);
+      const response = await axios.patch(`http://localhost:5000/api/articles/${articleId}/${currentStatus ? 'unpublish' : 'publish'}`);
       console.log('Toggle status response:', response.data);
       fetchArticles();
     } catch (err: any) {

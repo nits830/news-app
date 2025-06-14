@@ -152,7 +152,9 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
     calculateWordCount(article.content?.data || article.explanation);
   const readingTime = Math.ceil(wordCount / 200);
 
-  const renderExplanationWithImages = (text: string) => {
+  const renderExplanationWithImages = (text: string | undefined) => {
+    if (!text) return null;
+    
     const imageRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
     const parts = text.split(imageRegex);
     

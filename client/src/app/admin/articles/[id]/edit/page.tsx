@@ -1,32 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import api from '@/lib/axios';
+import axios from 'axios';
 
 interface Article {
   _id: string;
   title: string;
-  content: string;
+  originalSource: string;
+  summary: string;
+  explanation: string;
+  tags: string[];
+  category: string;
+  coverImage: string;
   published: boolean;
   slug: string;
 }
 
-export default function EditArticle({ params }: { params: { id: string } }) {
+export default function EditArticle({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const resolvedParams = use(params);
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchArticle();
-  }, [params.id]);
+    if (resolvedParams.id) {
+      fetchArticle();
+    }
+  }, [resolvedParams.id]);
+
+  const extractImagesFromText = (text: string) => {
+    const imageRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
+    const matches = text.match(imageRegex) || [];
+    return matches;
+  };
+
+  const handleExplanationChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    if (article) {
+      setArticle({ ...article, explanation: text });
+      const images = extractImagesFromText(text);
+      setPreviewImages(images);
+    }
+  };
 
   const fetchArticle = async () => {
     try {
-      const response = await api.get(`/articles/${params.id}`);
-      setArticle(response.data.data);
+      const response = await axios.get(`http://localhost:5000/api/articles/${resolvedParams.id}`);
+      setArticle(response.data);
+      if (response.data.explanation) {
+        const images = extractImagesFromText(response.data.explanation);
+        setPreviewImages(images);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch article');
     } finally {
@@ -40,7 +68,7 @@ export default function EditArticle({ params }: { params: { id: string } }) {
 
     setSaving(true);
     try {
-      await api.patch(`/articles/${params.id}`, article);
+      await axios.put(`http://localhost:5000/api/articles/${resolvedParams.id}`, article);
       router.push('/admin/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update article');
@@ -101,13 +129,107 @@ export default function EditArticle({ params }: { params: { id: string } }) {
 
             <div className="mb-6">
               <label className="block text-gray-700 text-sm font-bold mb-2">
-                Content
+                Original Source URL
+              </label>
+              <input
+                type="url"
+                value={article.originalSource}
+                onChange={(e) => setArticle({ ...article, originalSource: e.target.value })}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="https://www.example.com/article-title"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Summary
               </label>
               <textarea
-                value={article.content}
-                onChange={(e) => setArticle({ ...article, content: e.target.value })}
+                value={article.summary}
+                onChange={(e) => setArticle({ ...article, summary: e.target.value })}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
+                required
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Explanation
+              </label>
+              <textarea
+                value={article.explanation}
+                onChange={handleExplanationChange}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-64"
                 required
+                placeholder="Write your explanation here. You can include image URLs that will be automatically displayed."
+              />
+              {previewImages.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Preview Images:</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {previewImages.map((imageUrl, index) => (
+                      <div key={index} className="relative aspect-video">
+                        <img
+                          src={imageUrl}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Category
+              </label>
+              <select
+                value={article.category}
+                onChange={(e) => setArticle({ ...article, category: e.target.value })}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              >
+                <option value="Technology">Technology</option>
+                <option value="Politics">Politics</option>
+                <option value="World">World</option>
+                <option value="National">National</option>
+                <option value="Business">Business</option>
+                <option value="Finance">Finance</option>
+                <option value="Education">Education</option>
+                <option value="Science">Science</option>
+                <option value="Health">Health</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Gaming">Gaming</option>
+                <option value="Art">Art</option>
+                <option value="Law">Law</option>
+                <option value="Lifestyle">Lifestyle</option>
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Books">Books</option>
+                <option value="Children">Children</option>
+                <option value="Real Estate">Real Estate</option>
+                <option value="Environment">Environment</option>
+                <option value="Opinion">Opinion</option>
+                <option value="Elections">Elections</option>
+                <option value="Local">Local</option>
+                <option value="Interviews">Interviews</option>
+                <option value="Explainers">Explainers</option>
+                <option value="Events">Events</option>
+              </select>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Cover Image URL
+              </label>
+              <input
+                type="url"
+                value={article.coverImage}
+                onChange={(e) => setArticle({ ...article, coverImage: e.target.value })}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="https://www.example.com/image.jpg"
               />
             </div>
 
