@@ -5,6 +5,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const articleRoutes = require('./routes/articleRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 connectDB();
@@ -15,14 +17,19 @@ const app = express();
 app.use(cors({
   origin: 'http://localhost:3000', // Frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // Allow cookies
 }));
 
+// Middleware
 app.use(express.json());
+app.use(cookieParser());
 
+// Routes
 app.use('/api/articles', articleRoutes);
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api', categoryRoutes);
+app.use('/api', adminRoutes); // Admin routes
 
 // Error Handling Middleware
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');

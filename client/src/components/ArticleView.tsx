@@ -143,9 +143,34 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
     );
   }
 
-  const wordCount = article.summary.split(/\s+/).length + 
-    (article.content?.data || article.explanation).split(/\s+/).length;
+  const calculateWordCount = (text: string | undefined) => {
+    if (!text) return 0;
+    return text.split(/\s+/).length;
+  };
+
+  const wordCount = calculateWordCount(article.summary) + 
+    calculateWordCount(article.content?.data || article.explanation);
   const readingTime = Math.ceil(wordCount / 200);
+
+  const renderExplanationWithImages = (text: string) => {
+    const imageRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
+    const parts = text.split(imageRegex);
+    
+    return parts.map((part, index) => {
+      if (part.match(imageRegex)) {
+        return (
+          <div key={index} className="my-6">
+            <img
+              src={part}
+              alt={`Article image ${index + 1}`}
+              className="w-full h-auto rounded-lg shadow-lg"
+            />
+          </div>
+        );
+      }
+      return <p key={index} className="mb-4 text-gray-700 leading-relaxed">{part}</p>;
+    });
+  };
 
   return (
     <div className="w-full">
@@ -213,7 +238,9 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
                 )}
               </div>
             ) : (
-              <p className="text-gray-700 leading-relaxed">{article.explanation}</p>
+              <div className="text-gray-700 leading-relaxed">
+                {renderExplanationWithImages(article.explanation)}
+              </div>
             )}
           </div>
 
