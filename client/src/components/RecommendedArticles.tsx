@@ -1,39 +1,45 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import ArticleCard from './ArticleCard';
-import { usePathname } from 'next/navigation';
 
 interface Article {
   _id: string;
   title: string;
   summary: string;
+  coverImage: string;
   category: string;
   createdAt: string;
 }
 
 interface RecommendedArticlesProps {
-  currentArticleId: string | null;
-  onArticleSelect: (articleId: string) => void;
+  currentArticleId: string;
+  category?: string;
 }
 
-export default function RecommendedArticles({ currentArticleId, onArticleSelect }: RecommendedArticlesProps) {
+export default function RecommendedArticles({ currentArticleId, category }: RecommendedArticlesProps) {
+  const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const pathname = usePathname();
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/articles');
-        // Filter out the current article and get random articles
-        const filteredArticles = response.data.filter((article: Article) => article._id !== currentArticleId);
-        const randomArticles = filteredArticles
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 3);
-        setArticles(randomArticles);
+        let filteredArticles = response.data.filter((article: Article) => article._id !== currentArticleId);
+        
+        // If category is provided, prioritize articles from the same category
+        if (category) {
+          const sameCategoryArticles = filteredArticles.filter((article: Article) => article.category === category);
+          const otherCategoryArticles = filteredArticles.filter((article: Article) => article.category !== category);
+          filteredArticles = [...sameCategoryArticles, ...otherCategoryArticles];
+        }
+        
+        // Take only the first 3 articles
+        setArticles(filteredArticles.slice(0, 3));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -42,19 +48,20 @@ export default function RecommendedArticles({ currentArticleId, onArticleSelect 
     };
 
     fetchArticles();
-  }, [currentArticleId, pathname]);
+  }, [currentArticleId, category]);
+
+  const handleArticleSelect = (articleId: string) => {
+    router.push(`/article/${articleId}`);
+  };
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 p-4">
-            <div className="animate-pulse space-y-3">
-              <div className="h-4 bg-blue-200 rounded w-1/4"></div>
-              <div className="h-6 bg-blue-200 rounded w-3/4"></div>
-              <div className="h-4 bg-blue-200 rounded w-full"></div>
-              <div className="h-4 bg-blue-200 rounded w-2/3"></div>
-            </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-48 bg-gray-200 rounded-lg mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
           </div>
         ))}
       </div>
@@ -62,21 +69,20 @@ export default function RecommendedArticles({ currentArticleId, onArticleSelect 
   }
 
   if (error) {
-    return (
-      <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 p-4">
-        <p className="text-red-600">{error}</p>
-      </div>
-    );
+    return <p className="text-red-600">{error}</p>;
+  }
+
+  if (articles.length === 0) {
+    return <p className="text-gray-600">No recommended articles found</p>;
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Recommended Articles</h2>
+    <div className="space-y-6">
       {articles.map((article) => (
         <ArticleCard
           key={article._id}
           article={article}
-          onReadMore={onArticleSelect}
+          onReadMore={() => handleArticleSelect(article._id)}
         />
       ))}
     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import axios from 'axios';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, HomeIcon } from '@heroicons/react/24/outline';
 
 interface Category {
   id: string;
@@ -79,6 +79,17 @@ export default function CategoryBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16">
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.push('/')}
+              className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                pathname === '/'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-blue-50 hover:bg-blue-600/50 hover:text-white'
+              }`}
+            >
+              <HomeIcon className="h-5 w-5 mr-2" />
+              Home
+            </button>
             {displayedCategories.map((category) => {
               const isActive = pathname === `/category/${category.id}`;
               return (

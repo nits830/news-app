@@ -1,50 +1,79 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import { CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 
 interface Article {
   _id: string;
   title: string;
   summary: string;
+  coverImage: string;
   category: string;
   createdAt: string;
+  author?: {
+    name: string;
+    email: string;
+  };
 }
 
 interface ArticleCardProps {
   article: Article;
-  onReadMore: (articleId: string) => void;
+  onReadMore: () => void;
 }
 
 export default function ArticleCard({ article, onReadMore }: ArticleCardProps) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    router.push(`/article/${article._id}`);
+  };
+
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 p-4 hover:shadow-xl transition-shadow">
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <span>{new Date(article.createdAt).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}</span>
-          <span>•</span>
-          <span className="text-[#1e40af] font-medium">{article.category}</span>
+    <div 
+      className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300"
+      onClick={handleClick}
+    >
+      {article.coverImage && (
+        <div className="relative h-48 w-full">
+          <img
+            src={article.coverImage}
+            alt={article.title}
+            className="w-full h-full object-cover"
+          />
         </div>
-        
-        <h3 className="font-medium text-gray-900 line-clamp-2">
+      )}
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-sm font-medium text-[#1e40af]">{article.category}</span>
+          <span className="text-gray-400">•</span>
+          <span className="text-sm text-gray-600">
+            {new Date(article.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </span>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
           {article.title}
         </h3>
-        
-        <p className="text-sm text-gray-600 line-clamp-3">
+        <p className="text-gray-600 mb-4 line-clamp-3">
           {article.summary}
         </p>
-        
+        {article.author && (
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+            <UserIcon className="h-4 w-4" />
+            <span>{article.author.name}</span>
+          </div>
+        )}
         <button
-          onClick={() => onReadMore(article._id)}
-          className="flex items-center text-sm text-[#1e40af] hover:text-white font-medium group relative overflow-hidden rounded-md px-3 py-1.5 transition-all duration-300 ease-in-out hover:bg-[#1e40af] cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onReadMore();
+          }}
+          className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
         >
-          <span className="relative z-10">Read more</span>
-          <ChevronRightIcon className="h-4 w-4 ml-1 relative z-10 group-hover:translate-x-1 transition-transform duration-300 ease-in-out" />
-          <div className="absolute inset-0 bg-[#1e40af] transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-in-out"></div>
+          Read More
         </button>
       </div>
     </div>
