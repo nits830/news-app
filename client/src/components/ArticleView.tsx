@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Image from 'next/image';
 import { usePathname, useParams } from 'next/navigation';
+import CommentSection from './CommentSection';
 
 interface Article {
   _id: string;
@@ -248,20 +249,18 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
 
           {/* Additional Images */}
           {article.images && article.images.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+            <div className="space-y-6">
               {article.images.map((image, index) => (
-                <figure key={index} className="relative">
+                <div key={index} className="my-6">
                   <img
                     src={image.url}
                     alt={image.alt}
-                    className="w-full h-48 object-cover rounded-lg"
+                    className="w-full h-auto rounded-lg shadow-lg"
                   />
                   {image.caption && (
-                    <figcaption className="mt-2 text-sm text-gray-600 text-center">
-                      {image.caption}
-                    </figcaption>
+                    <p className="mt-2 text-sm text-gray-600 text-center">{image.caption}</p>
                   )}
-                </figure>
+                </div>
               ))}
             </div>
           )}
@@ -319,13 +318,16 @@ export default function ArticleView({ articleId }: ArticleViewProps) {
                 <span>{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
               </button>
             </div>
-            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
-              <ChatBubbleLeftIcon className="h-5 w-5" />
-              <span>Comment</span>
-            </button>
           </div>
         </footer>
       </article>
+
+      {/* Comments Section */}
+      {article._id && (
+        <div className="mt-8">
+          <CommentSection articleId={article._id} />
+        </div>
+      )}
     </div>
   );
 } 

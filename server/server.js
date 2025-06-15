@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const articleRoutes = require('./routes/articleRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const commentRoutes = require('./routes/commentRoutes');
 const cookieParser = require('cookie-parser');
 
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/articles', articleRoutes);
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api', categoryRoutes);
 app.use('/api', adminRoutes); // Admin routes
+app.use('/api/comments', commentRoutes); // Comment routes
 
 // Error Handling Middleware
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');

@@ -33,14 +33,7 @@ export default function CategoryPage() {
         setLoading(true);
         setError(null);
         
-        // Format the category name to match server expectations
-        const formattedCategory = formatCategoryName(categoryId as string);
-        
-        const { data } = await axios.get(`http://localhost:5000/api/category/${categoryId}`, {
-          params: {
-            category: formattedCategory
-          }
-        });
+        const { data } = await axios.get(`http://localhost:5000/api/category/${categoryId}`);
         
         if (!data || !Array.isArray(data)) {
           throw new Error('Invalid response format from server');

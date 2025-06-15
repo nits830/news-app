@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { CalendarIcon, UserIcon, TagIcon, ClockIcon, ShareIcon, BookmarkIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import RecommendedArticles from '@/components/RecommendedArticles';
+import CommentSection from '@/components/CommentSection';
 
 interface Article {
   _id: string;
@@ -260,20 +261,18 @@ export default function ArticlePage() {
                 <span>{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
               </button>
             </div>
-            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
-              <ChatBubbleLeftIcon className="h-5 w-5" />
-              <span>Comment</span>
-            </button>
           </div>
         </footer>
       </article>
 
-      {/* Recommended Articles */}
+      {/* Comments Section */}
       <div className="mt-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-blue-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recommended Articles</h2>
-          <RecommendedArticles currentArticleId={article._id} category={article.category} />
-        </div>
+        <CommentSection articleId={params.id as string} />
+      </div>
+
+      {/* Recommended Articles */}
+      <div className="mt-12">
+        <RecommendedArticles currentArticleId={params.id as string} />
       </div>
     </div>
   );

@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useState, useRef, useEffect } from 'react';
+import { MagnifyingGlassIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function HeaderBar() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,37 +21,53 @@ export default function HeaderBar() {
     console.log('Searching for:', searchQuery);
   };
 
+  // Handle click outside to close menu
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+        setShowLogoutConfirm(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    setShowLogoutConfirm(false);
+  };
+
   return (
-    <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 border-b border-blue-500 sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-blue-600 to-indigo-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Website Name */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-white">NewsApp</span>
+          <div className="flex items-center">
+            <Link href="/" className="text-white text-xl font-bold">
+              News App
             </Link>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-lg mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search news..."
-                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-blue-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-blue-100"
-                />
-                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-blue-100" />
-              </div>
-            </form>
-          </div>
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-8">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search articles..."
+                className="w-full px-4 py-2 pl-10 text-sm text-gray-900 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
+          </form>
 
-          {/* Auth Section */}
           <div className="flex items-center gap-4">
             {user ? (
-              <div className="relative">
+              <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="flex items-center space-x-3 focus:outline-none"
@@ -73,38 +93,52 @@ export default function HeaderBar() {
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                     <div className="py-1">
-                      <Link
-                        href="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setIsMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Sign out
-                      </button>
+                      {showLogoutConfirm ? (
+                        <div className="px-4 py-2">
+                          <p className="text-sm text-gray-700 mb-2">Are you sure?</p>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={handleLogout}
+                              className="flex-1 px-2 py-1 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
+                            >
+                              Yes, logout
+                            </button>
+                            <button
+                              onClick={() => setShowLogoutConfirm(false)}
+                              className="flex-1 px-2 py-1 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowLogoutConfirm(true)}
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <ArrowRightOnRectangleIcon className="h-5 w-5 mr-2 text-gray-500" />
+                          Sign out
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
             ) : (
-              <>
-                <Link href="/login" className="text-white hover:text-blue-100 font-medium">
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/login"
+                  className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                >
                   Sign in
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-white text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-white text-blue-600 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Sign Up
+                  Sign up
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
