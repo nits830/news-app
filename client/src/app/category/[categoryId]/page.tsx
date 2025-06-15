@@ -5,7 +5,6 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import ArticleCard from '@/components/ArticleCard';
 import { Article } from '@/types/article';
-import HeaderBar from '@/components/HeaderBar';
 import CategoryBar from '@/components/CategoryBar';
 import { NewspaperIcon } from '@heroicons/react/24/outline';
 
@@ -76,7 +75,6 @@ export default function CategoryPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <HeaderBar />
         <CategoryBar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse space-y-4">
@@ -94,7 +92,6 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeaderBar />
       <CategoryBar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="w-full">

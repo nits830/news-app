@@ -1,5 +1,4 @@
 import { Inter } from 'next/font/google'
-import HeaderBar from '@/components/HeaderBar'
 import CategoryBar from '@/components/CategoryBar'
 import ArticleLayout from '@/components/ArticleLayout'
 
@@ -8,7 +7,6 @@ const inter = Inter({ subsets: ['latin'] })
 export default function Home() {
   return (
     <div className={inter.className}>
-      <HeaderBar />
       <CategoryBar />
       <ArticleLayout />
       <footer className="bg-white border-t border-gray-200 mt-8">

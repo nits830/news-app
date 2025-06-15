@@ -1,9 +1,14 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { AuthProvider } from '@/context/AuthContext'
+import HeaderBar from '@/components/HeaderBar'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NewsApp - Your Trusted News Source',
-  description: 'Stay informed with the latest news and updates from around the world.',
+  title: 'News App',
+  description: 'Your daily news source',
 }
 
 export default function RootLayout({
@@ -13,7 +18,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={inter.className}>
+        <AuthProvider>
+          <HeaderBar />
+          <main>{children}</main>
+        </AuthProvider>
+      </body>
     </html>
   )
 }

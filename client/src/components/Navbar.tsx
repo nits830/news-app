@@ -1,51 +1,27 @@
 'use client';
 
-import { useState } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/context/AuthContext';
+import { useState } from 'react';
 
-export default function HeaderBar() {
+export default function Navbar() {
   const { user, logout } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement search functionality
-    console.log('Searching for:', searchQuery);
-  };
-
   return (
-    <header className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 border-b border-blue-500 sticky top-0 z-50">
+    <nav className="bg-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Website Name */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold text-white">NewsApp</span>
-            </Link>
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Link href="/" className="text-xl font-bold text-indigo-600">
+                News App
+              </Link>
+            </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-lg mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search news..."
-                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-blue-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-blue-100"
-                />
-                <MagnifyingGlassIcon className="absolute left-3 top-2.5 h-5 w-5 text-blue-100" />
-              </div>
-            </form>
-          </div>
-
-          {/* Auth Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center">
             {user ? (
               <div className="relative">
                 <button
@@ -62,11 +38,11 @@ export default function HeaderBar() {
                         className="rounded-full"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+                      <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-white">{user.name}</span>
+                    <span className="text-gray-700">{user.name}</span>
                   </div>
                 </button>
 
@@ -94,21 +70,24 @@ export default function HeaderBar() {
                 )}
               </div>
             ) : (
-              <>
-                <Link href="/login" className="text-white hover:text-blue-100 font-medium">
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/login"
+                  className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                >
                   Sign in
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-white text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-indigo-600 text-white hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Sign Up
+                  Sign up
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
       </div>
-    </header>
+    </nav>
   );
 } 

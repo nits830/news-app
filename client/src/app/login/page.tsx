@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -29,8 +31,8 @@ export default function LoginPage() {
     try {
       const { data } = await axios.post('http://localhost:5000/api/users/login', formData);
 
-      // Store the token in localStorage
-      localStorage.setItem('token', data.token);
+      // Use the auth context to handle login
+      login(data.token, data.user);
       
       // Redirect to home page
       router.push('/');
